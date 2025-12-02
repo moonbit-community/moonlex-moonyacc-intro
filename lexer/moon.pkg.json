@@ -1,0 +1,13 @@
+{
+  "pre-build": [
+    {
+      "command": "$mod_dir/.mooncakes/moonbitlang/ulex/moonlex $input | moonfmt > $output",
+      "input": "lexer.mbtx",
+      "output": "lexer.mbt"
+    }
+  ],
+  "import": [
+    "moonlex_moonyacc_intro/parser",
+    "moonbitlang/ulex-runtime/lexbuf"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+using @parser {type Token}
+using @lexbuf {type StringLexbuf}
+
+priv suberror EndOfInput
+pub suberror Unrecognized (Int, Char)
+}
+
+regex digit = ['0'-'9'];
+
+rule lex_token(lexbuf : StringLexbuf) -> (Token, Int, Int) raise {
+  parse {
+    eof => { raise EndOfInput }
+    [' ' '\t']+ => { lex_token(lexbuf) }
+    digit+ as t => { (NUMBER(try! @strconv.parse_int(t)), $startpos, $endpos) }
+    "+" => { (PLUS, $startpos, $endpos) }
+    "-" => { (MINUS, $startpos, $endpos) }
+    "*" => { (STAR, $startpos, $endpos) }
+    "(" => { (LPAREN, $startpos, $endpos) }
+    ")" => { (RPAREN, $startpos, $endpos) }
+    _ as c => { raise Unrecognized(($startpos, c)) }
+  }
+}
+
+{
+pub fn tokenize(input : String) -> Array[(Token, Int, Int)] raise Unrecognized {
+  let lexbuf = StringLexbuf::from_string(input)
+  let tokens = []
+  for {
+    let token = try lex_token(lexbuf) catch {
+      EndOfInput => break
+      Unrecognized(_) as err => raise err
+      _ => panic()
+    }
+    tokens.push(token)
+  }
+  tokens
+}
+}
