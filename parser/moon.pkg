@@ -1,9 +1,9 @@
-{
+options(
   "pre-build": [
     {
       "command": "$mod_dir/.mooncakes/moonbitlang/yacc/moonyacc $input | moonfmt > $output",
       "input": "parser.mbty",
-      "output": "parser.mbt"
-    }
-  ]
-}
+      "output": "parser.mbt",
+    },
+  ],
+)
