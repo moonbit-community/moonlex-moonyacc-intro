@@ -263,7 +263,7 @@ NonTerminal
 
 ### 示例 (`example_test.mbt`)
 
-```moonbit
+```moonbit nocheck
 ///|
 fn calc(input : String) -> Int raise {
   // 1. 使用 Lexer 将字符串转换为 Token 数组

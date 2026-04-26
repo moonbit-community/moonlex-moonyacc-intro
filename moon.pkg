@@ -1,0 +1,4 @@
+import {
+  "moonlex_moonyacc_intro/lexer",
+  "moonlex_moonyacc_intro/parser",
+} for "test"
