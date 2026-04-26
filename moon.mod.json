@@ -1,8 +1,6 @@
 {
   "name": "moonlex_moonyacc_intro",
-  "deps": {},
-  "bin-deps": {
-    "moonbitlang/yacc": "0.7.5",
-    "moonbitlang/ulex": "0.3.23"
+  "deps": {
+    "moonbitlang/ulex-runtime": "0.4.1"
   }
 }
