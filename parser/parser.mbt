@@ -490,6 +490,7 @@ fn[T] yy_parse(
             Shift(next_state) => {
               state_stack = @list.cons(next_state, state_stack)
               state = next_state
+              break
             }
             Reduce(count, symbol, action)
             | ReduceNoLookahead(count, symbol, action) =>
