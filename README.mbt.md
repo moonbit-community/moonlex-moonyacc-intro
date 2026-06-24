@@ -6,54 +6,27 @@ MoonBit 官方提供了 [lex](https://en.wikipedia.org/wiki/Lex_\(software\)) / 
 
 *与这篇文章配套的代码仓库位于 [moonlex-moonyacc-intro](https://github.com/moonbit-community/moonlex-moonyacc-intro)。*
 
-## 安装
+## 使用
 
-在你的项目中，通过以下命令安装：
+moonlex和moonyacc现在都以wasm cli的形式发布，在moon.pkg的dev_build中直接调用`moon runwasm`即可
 
-```bash
-moon add --bin moonbitlang/ulex
-moon add --bin moonbitlang/yacc
 ```
+// in a moon.pkg file
 
-## 配置
+rule(
+  name: "moonlex",
+  command: "moon runwasm moonbitlang/ulex@0.3.29 $input | moonfmt > $output",
+)
 
-通常我们需要在 `moon.pkg.json` 中配置 `pre-build` 字段，以便在构建时自动生成代码。
+dev_build(rule: "moonlex", input: "lexer.mbtx", output: "lexer.mbt")
 
-### 示例 (`lexer/moon.pkg.json`)
+rule(
+  name: "moonyacc",
+  command: "moon runwasm moonbitlang/yacc@0.7.14 $input | moonfmt > $output",
+)
 
-Lexer 通常依赖 Parser 定义的 Token 类型，因此需要 import parser 包。同时需要依赖 `moonbitlang/ulex-runtime`。
-
-```json
-{
-  "pre-build": [
-    {
-      "command": "$mod_dir/.mooncakes/moonbitlang/ulex/moonlex $input | moonfmt > $output",
-      "input": "lexer.mbtx",
-      "output": "lexer.mbt"
-    }
-  ],
-  "import": [
-    "moonlex_moonyacc_intro/parser",
-    "moonbitlang/ulex-runtime/lexbuf"
-  ]
-}
+dev_build(rule: "moonyacc", input: "parser.mbty", output: "parser.mbt")
 ```
-
-### 示例 (`parser/moon.pkg.json`)
-
-```json
-{
-  "pre-build": [
-    {
-      "command": "$mod_dir/.mooncakes/moonbitlang/yacc/moonyacc $input | moonfmt > $output",
-      "input": "parser.mbty",
-      "output": "parser.mbt"
-    }
-  ]
-}
-```
-
-*注意：`moonlex` 和 `moonyacc` 的可执行文件位于 `$mod_dir/.mooncakes/moonbitlang/ulex/moonlex` 和 `$mod_dir/.mooncakes/moonbitlang/yacc/moonyacc`。*
 
 ## MoonLex (Lexer Generator)
 
@@ -113,8 +86,6 @@ pub fn tokenize(input : String) -> Array[(Token, Int, Int)] raise Unrecognized {
 ```
 
 *实际上，`moonbitlang/ulex-runtime` 并不是必须的依赖，你也可以自行实现词法缓冲区（Lexbuf），只要它包含必要的接口即可。这里引入它是为了简化示例代码。*
-
-*现在 MoonBit 语言已经内置了实验性 `lexmatch` 表达式功能，我们更推荐你使用 `lexmatch` 语法来实现 Lexer。*
 
 ### 词法定义文件语法
 
@@ -263,7 +234,7 @@ NonTerminal
 
 ### 示例 (`example_test.mbt`)
 
-```moonbit
+```moonbit nocheck
 ///|
 fn calc(input : String) -> Int raise {
   // 1. 使用 Lexer 将字符串转换为 Token 数组

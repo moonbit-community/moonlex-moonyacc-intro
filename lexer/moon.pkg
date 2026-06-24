@@ -1,0 +1,13 @@
+import {
+  "moonlex_moonyacc_intro/parser",
+  "moonbitlang/ulex-runtime/lexbuf",
+  "moonbitlang/core/string",
+  "moonbitlang/core/int",
+}
+
+rule(
+  name: "moonlex",
+  command: "moon runwasm moonbitlang/ulex@0.3.29 $input | moonfmt > $output",
+)
+
+dev_build(rule: "moonlex", input: "lexer.mbtx", output: "lexer.mbt")
