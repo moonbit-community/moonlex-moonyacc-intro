@@ -12,7 +12,7 @@ rule lex_token(lexbuf : StringLexbuf) -> (Token, Int, Int) raise {
   parse {
     eof => { raise EndOfInput }
     [' ' '\t']+ => { lex_token(lexbuf) }
-    digit+ as t => { (NUMBER(try! @strconv.parse_int(t)), $startpos, $endpos) }
+    digit+ as t => { (NUMBER(try! @string.parse_int(t)), $startpos, $endpos) }
     "+" => { (PLUS, $startpos, $endpos) }
     "-" => { (MINUS, $startpos, $endpos) }
     "*" => { (STAR, $startpos, $endpos) }

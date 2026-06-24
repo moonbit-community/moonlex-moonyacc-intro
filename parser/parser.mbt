@@ -31,7 +31,7 @@ pub(all) enum TokenKind {
 }
 
 ///|
-pub impl Show for TokenKind with output(self, logger) {
+pub impl Show for TokenKind with fn output(self, logger) {
   logger.write_string(
     match self {
       TK_NUMBER => "NUMBER"
@@ -42,6 +42,18 @@ pub impl Show for TokenKind with output(self, logger) {
       TK_RPAREN => "\")\""
     },
   )
+}
+
+///|
+pub impl Debug for TokenKind with fn to_repr(self) {
+  match self {
+    TK_NUMBER => to_repr("NUMBER")
+    TK_PLUS => to_repr("+")
+    TK_MINUS => to_repr("-")
+    TK_STAR => to_repr("*")
+    TK_LPAREN => to_repr("(")
+    TK_RPAREN => to_repr(")")
+  }
 }
 
 ///|
@@ -57,7 +69,9 @@ type YYObj = Error
 priv suberror YYObj_Void
 
 ///|
-priv suberror YYObj_Int Int
+priv suberror YYObj_Int {
+  YYObj_Int(Int)
+}
 
 ///|
 type YYState = (YYSymbol) -> YYDecision
@@ -469,32 +483,31 @@ fn[T] yy_parse(
       }
       Reduce(count, symbol, action)
       | ReduceNoLookahead(count, symbol, action) =>
-        loop (count, symbol, action) {
-          _ => {
-            let args = data_stack[data_stack.length() - count:]
-            let data = action(last_pos, args)
-            let (start_pos, end_pos) = if args.length() == 0 {
-              (last_pos, last_pos)
-            } else {
-              (args[0].1, args[args.length() - 1].2)
+        for count = count, symbol = symbol, action = action {
+          let args = data_stack[data_stack.length() - count:]
+          let data = action(last_pos, args)
+          let (start_pos, end_pos) = if args.length() == 0 {
+            (last_pos, last_pos)
+          } else {
+            (args[0].1, args[args.length() - 1].2)
+          }
+          for _ in 0..<count {
+            ignore(data_stack.unsafe_pop())
+            state_stack = state_stack.unsafe_tail()
+          }
+          state = state_stack.unsafe_head()
+          data_stack.push((data, start_pos, end_pos))
+          match state(symbol) {
+            Accept => return return_(data_stack.unsafe_pop().0)
+            Shift(next_state) => {
+              state_stack = @list.cons(next_state, state_stack)
+              state = next_state
+              break ()
             }
-            for i in 0..<count {
-              ignore(data_stack.unsafe_pop())
-              state_stack = state_stack.unsafe_tail()
-            }
-            state = state_stack.unsafe_head()
-            data_stack.push((data, start_pos, end_pos))
-            match state(symbol) {
-              Accept => return return_(data_stack.unsafe_pop().0)
-              Shift(next_state) => {
-                state_stack = @list.cons(next_state, state_stack)
-                state = next_state
-              }
-              Reduce(count, symbol, action)
-              | ReduceNoLookahead(count, symbol, action) =>
-                continue (count, symbol, action)
-              _ => panic()
-            }
+            Reduce(count, symbol, action)
+            | ReduceNoLookahead(count, symbol, action) =>
+              continue count, symbol, action
+            _ => panic()
           }
         }
       Error => {
@@ -532,17 +545,14 @@ fn error(
                   _ => panic()
                 }
               }
-
               inner_go(stack, count, symbol)
             }
             Error => ()
           }
       }
     }
-
     go(stack)
   }
-
   for
     term in (
       [
